@@ -72,6 +72,7 @@ class Game extends React.Component{
             ],
             nextPlayer:'o', // 可以通过squares最后一次 x/o 的数量对比推断出来，但是用了数据，直接粗暴 
             reviewIndex:0,  
+            resultIndex:0,
             isReview:false,
             winner:null, 
             succPos:[], 
@@ -89,15 +90,15 @@ class Game extends React.Component{
         squares[index]=this.state.nextPlayer;
         current.push(squares)
         // console.log(current)
-        // this.state.current=current
-        this.setState({current})// 用 赋值的方式不行，下面的nextPlayer就可以，但是会有警告
-        this.state.nextPlayer= (nextPlayer==='x'?'o':'x') //warn: Do not mutate state directly. Use setState() 
+        // this.setState({current})// 用 赋值的方式不行，下面的nextPlayer就可以，但是会有警告
+        nextPlayer= (nextPlayer==='x'?'o':'x') //warn: Do not mutate state directly. Use setState() 
+        this.setState({current,nextPlayer})
 
         if(current.length>5){ // 官网是在render中进行的；第5次后才需要判断；而且本例还有其他的render
             // 本例中，把winner添加到state中了 
             var {winner,succPos}=calculateWinner(squares)
-            console.log('胜利者是：'+winner)
             if(winner){
+                console.log('胜利者是：'+winner)
                 this.setState({winner,succPos})
                 // alert('比赛已经结束了，胜利者是：'+winner) // 会先弹框，阻止ui刷新
                 setTimeout(()=>alert('比赛已经结束了，胜利者是：'+winner),0)
@@ -105,7 +106,7 @@ class Game extends React.Component{
             }
             if(current.length===10){
                 this.setState({winner:'平局'})
-                setTimeout(()=>alert('比赛已经结束了，是平局！'),500)
+                setTimeout(()=>alert('比赛结束，打平！'),500)
             }
         }
     }
@@ -130,61 +131,75 @@ class Game extends React.Component{
     }
     addMore(){
         if(this.state.isReview) return;
-        var {current,winner,rounds}=this.state
-        rounds.push({current,winner})
+        var {current,winner,rounds,succPos}=this.state
+        rounds.push({current,winner,succPos})
         current=[];
         current.push(new Array(9).fill(0))// 需要填充数值，不然渲染为空;可能是map造成的 
         this.setState({rounds,current,winner:null,succPos:[],reviewIndex:0}); 
     }
     resume(){
         if(this.state.isReview) return;
-        this.setState({rounds:[],current:[new Array(9).fill(0)],winner:null,succPos:[]})
+        this.setState({rounds:[],current:[new Array(9).fill(0)],winner:null,resultIndex:0,succPos:[]})
+    }
+    reviewResult(index){
+        this.setState({resultIndex:index})
     }
     render(){
-        const {current,nextPlayer,reviewIndex,winner,succPos}=this.state;
+        const {rounds,current,nextPlayer,reviewIndex,resultIndex,winner,succPos}=this.state;
+        let result;
+        if(rounds.length>0){
+            // 可能setState 更新不及时，squares赋值为空
+            var roundCurr=rounds[resultIndex].current||[[0,0,0,0,0,0,0,0,0]];
+            var roundSuccPos=rounds[resultIndex].succPos||[];
+            result=<Board succPos={roundSuccPos} onXiaqi={(index)=>{}} squares={roundCurr[roundCurr.length-1]} />
+        }
         let Status;
         if(winner){
-            Status=<p>比赛结束，胜利者是： {winner}</p>
+            Status=<p className="status">比赛结束,胜利者是:{winner}</p>
         }else{
-            Status=<p>Next Player is {nextPlayer}</p>;
+            Status=<p className="status">下一步玩家为: {nextPlayer}</p>;
         }
         return (
             <div className="game">
-                <Board succPos={succPos} onXiaqi={(index)=>this.xiaqi(index)} player={nextPlayer} squares={current[current.length-1]} />
-                <div style={{width:'120px'}} className="game-info">
+                <div>
+                     <p>当前正在进行第 {this.state.rounds.length+1} 比赛</p>
+                    <Board succPos={succPos} onXiaqi={(index)=>this.xiaqi(index)} player={nextPlayer} squares={current[current.length-1]} />
+                    { Status }
+                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.review(this.state.current.length)}}>回放</button>
+                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.addMore()}}>再来一局</button>
+                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.resume()}}>清空历史</button>
+                </div>
+                <div className="game-info">
                     {/* <p>Next Player is {nextPlayer}</p>
                     <p>比赛结束，胜利者是：</p> */}
-                    { Status }
-                    <p>回看比赛过程</p>
                     <div>
+                        <p>查看当前比赛过程</p>
                         <ul>
                             {
                                 current.map((v,k)=>{
-                                    return <li className={reviewIndex===k?'active':''} onClick={(e)=>{this.goto(k,e)}} key={k}> 第{k}步 </li>
+                                    return <li className={reviewIndex===k?'active':''} onClick={(e)=>{this.goto(k,e)}} key={k}> 第 {k} 步 </li>
                                 })
                             }
                         </ul>
                     </div>
                 </div>
                 <div className="game-result">
-                    
+                    <p>当前比赛过程回放</p>
                     {<Board succPos={[]} onXiaqi={(index)=>{}} squares={current[reviewIndex]} />}
                 </div>
                 <div>
-                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.review(this.state.current.length)}}>回放</button>
-                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.addMore()}}>再来一局</button>
-                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.resume()}}>重新来过</button>
                     <p>查看历次比赛结果</p>
                     <ul>
                         {
                             this.state.rounds.map((v,k)=>{
-                                return <li onClick={()=>{this.reviewResult(k)}} key={k}>比赛完成{k+1}局，胜利者是{v.winner?v.winner:'平局'}</li>
+                                return <li className={resultIndex===k?'active1':''} onClick={()=>{this.reviewResult(k)}} key={k}>第{k+1}次比赛结果，胜利者是{v.winner?v.winner:'平局'}</li>
                             })
                         }
                     </ul>
                 </div>
                 <div>
-                    TODO: 添加回看每局比赛的结果
+                    <p>第 { this.state.resultIndex + 1} 局比赛的结果</p>
+                    {result}
                 </div>
             </div>
         )

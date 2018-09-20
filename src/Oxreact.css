@@ -50,11 +50,34 @@ body {
   }
 
 /* self  **/
+ul{
+    padding:0;
+}
+ul li{
+    padding:4px 0;
+    cursor:pointer;
+}
 li.active{
     color:#eee;
-    background:#11114d;
+    background:#61a2f4;
+}
+li.active1{
+    color:#eee;
+    background:#48c033;
 }
 .succ{
     color:#e3e;
     background:#3f3;
+}
+
+.game > div{
+    min-width:240px;
+    margin-right:10px;
+}
+p.status{
+    font-size:22px;
+    font-weight:600;
+}
+.square{
+    /* cursor:pointer; */
 }
