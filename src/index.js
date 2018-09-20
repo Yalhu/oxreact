@@ -192,7 +192,7 @@ class Game extends React.Component{
                     <ul>
                         {
                             this.state.rounds.map((v,k)=>{
-                                return <li className={resultIndex===k?'active1':''} onClick={()=>{this.reviewResult(k)}} key={k}>第{k+1}次比赛结果，胜利者是{v.winner?v.winner:'平局'}</li>
+                                return <li className={resultIndex===k?'active1':''} onClick={()=>{this.reviewResult(k)}} key={k}>第 {k+1} 局比赛结束，胜利者是 {v.winner?v.winner:'平局'}</li>
                             })
                         }
                     </ul>
