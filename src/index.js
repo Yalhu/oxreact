@@ -113,14 +113,14 @@ class Game extends React.Component{
         // if(this.state.isReview) return;
         this.setState({reviewIndex:index})
     }
-    review(){
-        this.setState({isReview:true})
-        for(let i=0;i<this.state.current.length;i++){
+    review(length){
+        this.setState({isReview:true}) // TODO: 用timerID，清空定时器后还可以re-review,
+        for(let i=0;i<length;i++){
             setTimeout(()=>{
                 this.goto(i)
                 // 可能应为setState不是及时更新/异步更新，所以要加定时器
                 setTimeout(()=>{
-                    if(i===(this.state.current.length-1)){
+                    if(i===(length-1)){
                         alert('回放结束')
                         this.setState({isReview:false})
                     }
@@ -171,7 +171,7 @@ class Game extends React.Component{
                     {<Board succPos={[]} onXiaqi={(index)=>{}} squares={current[reviewIndex]} />}
                 </div>
                 <div>
-                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.review()}}>回放</button>
+                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.review(this.state.current.length)}}>回放</button>
                     <button disabled={this.state.isReview?true:false} onClick={()=>{this.addMore()}}>再来一局</button>
                     <button disabled={this.state.isReview?true:false} onClick={()=>{this.resume()}}>重新来过</button>
                     <p>查看历次比赛结果</p>
