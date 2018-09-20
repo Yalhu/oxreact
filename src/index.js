@@ -72,6 +72,7 @@ class Game extends React.Component{
             ],
             nextPlayer:'o', // 可以通过squares最后一次 x/o 的数量对比推断出来，但是用了数据，直接粗暴 
             reviewIndex:0,  
+            isReview:false,
             winner:null, 
             succPos:[], 
         }
@@ -109,18 +110,26 @@ class Game extends React.Component{
         }
     }
     goto(index,e){
+        // if(this.state.isReview) return;
         this.setState({reviewIndex:index})
     }
     review(){
+        this.setState({isReview:true})
         for(let i=0;i<this.state.current.length;i++){
             setTimeout(()=>{
                 this.goto(i)
                 // 可能应为setState不是及时更新/异步更新，所以要加定时器
-                setTimeout(()=>{i===(this.state.current.length-1)&& alert('回放结束')},0)
+                setTimeout(()=>{
+                    if(i===(this.state.current.length-1)){
+                        alert('回放结束')
+                        this.setState({isReview:false})
+                    }
+                },0)
             },i*1500)
         }
     }
     addMore(){
+        if(this.state.isReview) return;
         var {current,winner,rounds}=this.state
         rounds.push({current,winner})
         current=[];
@@ -128,6 +137,7 @@ class Game extends React.Component{
         this.setState({rounds,current,winner:null,succPos:[],reviewIndex:0}); 
     }
     resume(){
+        if(this.state.isReview) return;
         this.setState({rounds:[],current:[new Array(9).fill(0)],winner:null,succPos:[]})
     }
     render(){
@@ -161,9 +171,9 @@ class Game extends React.Component{
                     {<Board succPos={[]} onXiaqi={(index)=>{}} squares={current[reviewIndex]} />}
                 </div>
                 <div>
-                    <button onClick={()=>{this.review()}}>回放</button>
-                    <button onClick={()=>{this.addMore()}}>再来一局</button>
-                    <button onClick={()=>{this.resume()}}>重新来过</button>
+                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.review()}}>回放</button>
+                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.addMore()}}>再来一局</button>
+                    <button disabled={this.state.isReview?true:false} onClick={()=>{this.resume()}}>重新来过</button>
                     <p>查看历次比赛结果</p>
                     <ul>
                         {
