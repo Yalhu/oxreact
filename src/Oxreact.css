@@ -71,14 +71,11 @@ li.active1{
 }
 
 .game > div{
-    min-width:200px;
+    min-width:130px;
     margin-right:10px;
 }
 .game>div:first-child{
     min-width:220px;
-}
-.game>div:nth-child(2){
-    min-width:140px;
 }
 p.status{
     font-size:22px;
